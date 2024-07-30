@@ -1,0 +1,20 @@
+{
+  "name": "book-store",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "serve": "cd back-end && npm run start:prod",
+    "build": "npm run build:client && npm run build:server",
+    "build:server": "cd back-end && npm install && npx prisma generate && npm run build",
+    "build:client": "cd web-app && npm install && npm run build",
+    "dev": "docker compose up --build",
+    "test": "cd test && npm install && npm run test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

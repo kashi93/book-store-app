@@ -1,0 +1,78 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Book {
+  id            String    @id @default(uuid())
+  title         String
+  isbn          String    @unique // International Standard Book Number
+  author        String
+  category      String
+  price         Float
+  stock         Int
+  publishedDate DateTime?
+  description   String?
+  coverImageUrl String?
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? @db.Timestamp(0)
+
+  orderItems OrderItem[]
+}
+
+model Customer {
+  id         String    @id @default(uuid())
+  firstName  String
+  lastName   String
+  address    String?
+  city       String?
+  country    String?
+  postalCode String?
+  createdAt  DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime? @db.Timestamp(0)
+
+  orders Order[]
+}
+
+enum OrderStatus {
+  Pending
+  Processing
+  Shipped
+  Delivered
+  Cancelled
+  Returned
+}
+
+model Order {
+  id          Int         @id @default(autoincrement())
+  customerId  String
+  totalAmount Float
+  status      OrderStatus
+  createdAt   DateTime    @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?   @db.Timestamp(0)
+
+  customer   Customer    @relation(fields: [customerId], references: [id])
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id        String    @id @default(uuid())
+  orderId   Int
+  bookId    String
+  quantity  Int
+  unitPrice Float
+  createdAt DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.Timestamp(0)
+
+  order Order @relation(fields: [orderId], references: [id])
+  book  Book  @relation(fields: [bookId], references: [id])
+}

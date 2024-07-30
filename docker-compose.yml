@@ -1,0 +1,48 @@
+name: book-store
+services:
+  web-app:
+    build:
+      context: ./web-app/
+      dockerfile: Dockerfile
+    ports:
+      - 5173:5173
+    volumes:
+      - ./web-app/src:/usr/src/app/src
+    depends_on:
+      backend:
+        condition: "service_healthy"
+          
+  backend:
+    build:
+      context: ./back-end/
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: "postgresql://postgres:postgres@database:5432/book-store?schema=public"
+    ports:
+      - 3000:3000
+    volumes:
+      - ./back-end/:/usr/src/app
+      - ./web-app/:/usr/src/web-app
+    healthcheck:
+        test: ["CMD", "curl", "-f", "http://host.docker.internal:3000/api"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+    depends_on:
+      database:
+        condition: "service_healthy"
+  
+  database:
+    image: postgres:16.2
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - 3001:5432
+    volumes:
+      - ./database:/var/lib/postgresql/data
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U postgres"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
